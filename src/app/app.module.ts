@@ -21,7 +21,7 @@ import { InMemoryDataService } from './in-memory-data.service';
 		// Le module HttpClientInMemoryWebApiModule intercepte les requêtes HTTP
 		// et retourne des réponses simulées du serveur.
 		// Retirer l'importation quand un "vrai" serveur est prêt pour recevoir des requêtes.
-		HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { dataEncapsulation: false }),
+		// HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { dataEncapsulation: false }),
 		PokemonsModule,
 		LoginRoutingModule,
 		AppRoutingModule

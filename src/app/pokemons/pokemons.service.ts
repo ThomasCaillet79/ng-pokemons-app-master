@@ -7,19 +7,40 @@ import { catchError, map, tap } from 'rxjs/operators';
 @Injectable()
 export class PokemonsService {
 
-	// le point d’accés à notre API
-	private pokemonsUrl = 'api/pokemons';
+	pokemons: Pokemon[] = null;
+	pokemon: Pokemon = null;
+
+	// le point d’accés à notre API // dev : 'api/pokemons';
+	private pokemonsUrl = 'https://pokemon-app-mt-default-rtdb.firebaseio.com/pokemons';
 
 	constructor(private http: HttpClient) { }
 
 	/** GET pokemons */
-	getPokemons(): Observable<Pokemon[]> {
-		return this.http.get<Pokemon[]>(this.pokemonsUrl).pipe(
+	getPokemons(): Pokemon[] {
+		let names = [];
+		this.pokemons = [];
+		this.http.get<any[]>(this.pokemonsUrl + ".json").pipe(
 			tap(_ => this.log(`fetched pokemons`)),
 			catchError(this.handleError('getPokemons', []))
-		);
-	}
+		).subscribe(next => {
+			names = Object.keys(next);
+			for (let i = 0; i < names.length; i++) {
+				let pokemon_to_add = new Pokemon();
+				pokemon_to_add.name = names[i];
+				pokemon_to_add.id = next[names[i]].id;
+				pokemon_to_add.hp = next[names[i]].hp;
+				pokemon_to_add.cp = next[names[i]].cp;
+				pokemon_to_add.picture = next[names[i]].picture;
+				pokemon_to_add.types = next[names[i]].types;
+				pokemon_to_add.created = next[names[i]].created;
 
+				this.pokemons.push(pokemon_to_add);
+			}
+		});
+
+		return this.pokemons;
+	}
+	// ICI !!!!! \\\
 	/** GET pokemon */
 	getPokemon(id: number): Observable<Pokemon> {
 		const url = `${this.pokemonsUrl}/${id}`;

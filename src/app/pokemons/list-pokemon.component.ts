@@ -11,6 +11,7 @@ import { PokemonsService } from './pokemons.service';
 export class ListPokemonComponent implements OnInit {
 
 	pokemons: Pokemon[] = null;
+	test: any = null;
 
 	constructor(
 		private router: Router,
@@ -23,8 +24,7 @@ export class ListPokemonComponent implements OnInit {
 
 	getPokemons(): void {
 		this.titleService.setTitle('Liste des pokémons');
-		this.pokemonsService.getPokemons()
-			.subscribe(pokemons => this.pokemons = pokemons);
+		this.pokemons = this.pokemonsService.getPokemons();
 	}
 
 	selectPokemon(pokemon: Pokemon): void {
