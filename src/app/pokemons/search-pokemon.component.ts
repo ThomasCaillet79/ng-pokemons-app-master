@@ -20,7 +20,7 @@ export class PokemonSearchComponent implements OnInit {
 		private pokemonsService: PokemonsService,
 		private router: Router) { }
 
-	// Ajoute un terme de recherche dans le flux de l'Observable 'searchTerms' (id push à un array)
+	// Ajoute un terme de recherche dans le flux de l'Observable 'searchTerms' (i.d push à un array)
 	search(term: string): void {
 		this.searchTerms.next(term);
 	}
