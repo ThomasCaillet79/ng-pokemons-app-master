@@ -121,7 +121,7 @@ export class PokemonsService {
 			).subscribe(next => {
 					ids = Object.keys(next);
 					for (let i = 0; i < ids.length; i++) {
-						if(next[ids[i]] != null && next[ids[i]].name.includes(term)){
+						if(next[ids[i]] != null && next[ids[i]].name.toLowerCase().includes(term.toLowerCase())){
 							pokemonsSearched.push(next[ids[i]]);
 						}
 					}
