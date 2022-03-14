@@ -12,7 +12,7 @@ export class PokemonsService {
 	idMax: number = 0;
 
 	// le point d’accés à notre API // dev : 'api/pokemons';
-	private pokemonsUrl = 'https://pokemon-app-mt-default-rtdb.firebaseio.com/pokemons';
+	private pokemonsUrl = 'https://pokedex-mt-default-rtdb.europe-west1.firebasedatabase.app/pokemons';
 
 	constructor(private http: HttpClient) { }
 

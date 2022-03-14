@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site" : "pokedex-mt",
     "public": "src",
     "ignore": [
       "firebase.json",
