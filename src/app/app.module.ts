@@ -12,6 +12,7 @@ import { PageNotFoundComponent } from './page-not-found.component';
 
 import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { InMemoryDataService } from './in-memory-data.service';
+import {CreateAccountComponent} from "./create-account.component";
 
 @NgModule({
 	imports: [
@@ -29,7 +30,8 @@ import { InMemoryDataService } from './in-memory-data.service';
 	declarations: [
 		AppComponent,
 		LoginComponent,
-		PageNotFoundComponent
+		PageNotFoundComponent,
+		CreateAccountComponent
 	],
 	providers: [Title],
 	bootstrap: [AppComponent]

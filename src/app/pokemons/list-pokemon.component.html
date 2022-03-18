@@ -27,9 +27,7 @@
     routerLink="/pokemon/add" href>
     <strong>+</strong>
   </a>
-<a *ngIf="!authService.isAdm" >
-  <button (click)="addPokemon()">Add
-
-  </button>
-
+<a *ngIf="!authService.isAdm" class="btn-floating btn-large waves-effect waves-light red z-depth-3"
+   (click)="addPokemon()">
+    <strong>+</strong>
 </a>

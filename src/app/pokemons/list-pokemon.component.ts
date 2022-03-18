@@ -41,6 +41,7 @@ export class ListPokemonComponent implements OnInit {
 				id = idAdd;
 				let link = ['/pokemon', id.toString()];
 				this.router.navigate(link);
+				this.getPokemons();
 			});
 	}
 

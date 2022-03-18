@@ -25,6 +25,7 @@ import { AuthService } from './auth.service';
 	    </form>
       <div class="card-action center">
         <a (click)="login()" class="waves-effect waves-light btn"  *ngIf="!authService.isLoggedIn">Se connecter</a>
+	    <a (click)="createAccount()" class="waves-effect waves-light btn"  *ngIf="!authService.isLoggedIn">Créer un compte</a>
         <a (click)="logout()" *ngIf="authService.isLoggedIn">Se déconnecter</a>
       </div>
     </div>
@@ -73,5 +74,9 @@ export class LoginComponent {
 	logout() {
 		this.authService.logout();
 		this.setMessage();
+	}
+
+	// Créer un compte
+	createAccount(){
 	}
 }
