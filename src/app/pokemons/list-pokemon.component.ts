@@ -35,8 +35,13 @@ export class ListPokemonComponent implements OnInit {
 	}
 
 	addPokemon(): void{
-		this.pokemonsService.addUserPokemon();
-		//window.location.reload();
+		let id: number;
+		this.pokemonsService.addUserPokemon()
+			.subscribe(idAdd => {
+				id = idAdd;
+				let link = ['/pokemon', id.toString()];
+				this.router.navigate(link);
+			});
 	}
 
 }

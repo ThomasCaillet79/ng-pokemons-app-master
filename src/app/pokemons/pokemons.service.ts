@@ -10,7 +10,7 @@ import {AuthService} from "../auth.service";
 export class PokemonsService {
 
 	pokemons: Pokemon[] = null;
-	pokemons2: Pokemon[] = null;
+	all_pokemons: Pokemon[] = null;
 
 	pokemon: Pokemon = null;
 	idMax: number = 0;
@@ -27,7 +27,7 @@ export class PokemonsService {
 		let ids = [];
 		let num_ids: number[] = [];
 		this.pokemons = [];
-		this.pokemons2 = [];
+		this.all_pokemons = [];
 		this.http.get<any[]>(this.pokemonsUrl + ".json").pipe(
 			tap(_ => this.log(`fetched pokemons`)),
 			catchError(this.handleError('getPokemons', []))
@@ -44,6 +44,8 @@ export class PokemonsService {
 					pokemon_to_add.picture = next[ids[i]].picture;
 					pokemon_to_add.types = next[ids[i]].types;
 					pokemon_to_add.created = next[ids[i]].created;
+
+					this.all_pokemons.push(pokemon_to_add);
 
 					if (this.authService.isAdm){
 						this.pokemons.push(pokemon_to_add);
@@ -146,16 +148,13 @@ export class PokemonsService {
 	}
 
 	addUserPokemon(): Observable<number> {
-		const httpOptions = {
-			headers: new HttpHeaders({'Content-Type': 'application/json'})
-		};
-
 		let listeUsPoke = this.authService.listPoke;
-		//listeUsPoke.push(Math.floor(Math.random()*this.pokemons.length));
-		// @ts-ignore
-		return this.http.put<number>(this.urlUsers+"/"+this.authService.name+"/listePoke/"+listeUsPoke.length+".json", Math.floor(Math.random()*this.pokemons.length), httpOptions).pipe(
-			tap((pokemon: number) => this.log(`added pokemon with `)),
-			catchError(this.handleError<number[]>('addPokemon'))
+		let newIdPokemon = Math.floor(Math.random()*this.all_pokemons.length);
+
+		let url = this.urlUsers+"/"+this.authService.name+"/listePoke/"+listeUsPoke.length+".json";
+		return this.http.put<any>(url, newIdPokemon).pipe(
+			tap(pokemon => this.log(`added pokemon with id=${pokemon} `)),
+			catchError(this.handleError<number>('addUserPokemon'))
 		);
 	}
 
@@ -166,23 +165,12 @@ export class PokemonsService {
 			return of([]);
 		}
 
-		let ids = [];
 		let pokemonsSearched: Pokemon[] = [];
-		this.http.get<any>(this.pokemonsUrl + '.json').pipe(
-			tap(_ => this.log(`found pokemons matching "${term}"`)),
-			catchError(this.handleError<Pokemon[]>('searchPokemons', []))
-			).subscribe(next => {
-					ids = Object.keys(next);
-					for (let i = 0; i < ids.length; i++) {
-						if(next[ids[i]] != null && next[ids[i]].name.toLowerCase().includes(term.toLowerCase())){
-							for (let j = 0; j < this.pokemons.length; j++){
-								if(this.pokemons[j].id == next[ids[i]].id){
-									pokemonsSearched.push(next[ids[i]]);
-								}
-							}
-						}
-					}
-			});
+		for (let j = 0; j < this.pokemons.length; j++){
+			if(this.pokemons[j].name.toLowerCase().includes(term.toLowerCase()) && !pokemonsSearched.includes(this.pokemons[j])){
+				pokemonsSearched.push(this.pokemons[j]);
+			}
+		}
 
 		return of(pokemonsSearched);
 	}
