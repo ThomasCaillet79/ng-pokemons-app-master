@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { Pokemon } from './pokemon';
 import { PokemonsService } from './pokemons.service';
+import {AuthService} from "../auth.service";
 
 @Component({
 	selector: 'detail-pokemon',
@@ -16,7 +17,8 @@ export class DetailPokemonComponent implements OnInit {
 		private route: ActivatedRoute,
 		private router: Router,
 		private pokemonsService: PokemonsService,
-		private titleService: Title) { }
+		private titleService: Title,
+		private authService: AuthService) { }
 
 	ngOnInit(): void {
 		let id = +this.route.snapshot.paramMap.get('id');

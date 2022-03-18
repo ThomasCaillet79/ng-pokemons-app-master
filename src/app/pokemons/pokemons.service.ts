@@ -3,24 +3,31 @@ import { Pokemon } from './pokemon';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import {AuthService} from "../auth.service";
+
 
 @Injectable()
 export class PokemonsService {
 
 	pokemons: Pokemon[] = null;
+	pokemons2: Pokemon[] = null;
+
 	pokemon: Pokemon = null;
 	idMax: number = 0;
 
 	// le point d’accés à notre API // dev : 'api/pokemons';
-	private pokemonsUrl = 'https://pokedex-mt-default-rtdb.europe-west1.firebasedatabase.app/pokemons';
+	private pokemonsUrl = 'https://pokemon-beb38-default-rtdb.europe-west1.firebasedatabase.app/pokemons';
+	private urlUsers = 'https://pokemon-beb38-default-rtdb.europe-west1.firebasedatabase.app/users';
 
-	constructor(private http: HttpClient) { }
+
+	constructor(private http: HttpClient, private authService: AuthService) { }
 
 	/** GET pokemons */
 	getPokemons(): Pokemon[] {
 		let ids = [];
 		let num_ids: number[] = [];
 		this.pokemons = [];
+		this.pokemons2 = [];
 		this.http.get<any[]>(this.pokemonsUrl + ".json").pipe(
 			tap(_ => this.log(`fetched pokemons`)),
 			catchError(this.handleError('getPokemons', []))
@@ -38,13 +45,27 @@ export class PokemonsService {
 					pokemon_to_add.types = next[ids[i]].types;
 					pokemon_to_add.created = next[ids[i]].created;
 
-					this.pokemons.push(pokemon_to_add);
+					if (this.authService.isAdm){
+						this.pokemons.push(pokemon_to_add);
+					}
+					else {
+						let listeUserPoke = this.authService.getListPokemon();
+						for (let k = 0; k < listeUserPoke.length; k++){
+							if(pokemon_to_add.id == listeUserPoke[k]) {
+								this.pokemons.push(pokemon_to_add);
+							}
+						}
+					}
 				}
 			}
 			this.idMax = Math.max(...num_ids) + 1;
+
 		});
 
 		return this.pokemons;
+
+
+
 	}
 
 	/** GET pokemon */
@@ -65,44 +86,76 @@ export class PokemonsService {
 			this.pokemon.created = next.created;
 			this.pokemons.push(this.pokemon);
 		});
-
+		console.log(this.pokemons.includes(this.pokemon))
 		return this.pokemon;
 	}
 
 	/** PUT: update the pokemon on the server */
 	updatePokemon(pokemon: Pokemon): Observable<any> {
-		const httpOptions = {
-			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-		};
+		if(this.authService.isAdm){
+			const httpOptions = {
+				headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+			};
 
-		return this.http.put(this.pokemonsUrl + '/' + pokemon.id.toString() + '.json', pokemon, httpOptions).pipe(
-			tap(_ => this.log(`updated pokemon id=${pokemon.id}`)),
-			catchError(this.handleError<any>('updatePokemon'))
-		);
+			return this.http.put(this.pokemonsUrl + '/' + pokemon.id.toString() + '.json', pokemon, httpOptions).pipe(
+				tap(_ => this.log(`updated pokemon id=${pokemon.id}`)),
+				catchError(this.handleError<any>('updatePokemon'))
+			);
+		}
+		else{
+			return of();
+		}
+
 	}
 
 	/** DELETE pokemon */
 	deletePokemon(pokemon: Pokemon): Observable<Pokemon> {
-		const url = this.pokemonsUrl + '/' + pokemon.id.toString() + '.json';
-		const httpOptions = {
-			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-		};
+		if(this.authService.isAdm) {
 
-		return this.http.delete<Pokemon>(url, httpOptions).pipe(
-			tap(_ => this.log(`deleted pokemon id=${pokemon.id}`)),
-			catchError(this.handleError<Pokemon>('deletePokemon'))
-		);
+			const url = this.pokemonsUrl + '/' + pokemon.id.toString() + '.json';
+			const httpOptions = {
+				headers: new HttpHeaders({'Content-Type': 'application/json'})
+			};
+
+			return this.http.delete<Pokemon>(url, httpOptions).pipe(
+				tap(_ => this.log(`deleted pokemon id=${pokemon.id}`)),
+				catchError(this.handleError<Pokemon>('deletePokemon'))
+			);
+		}
+		else {
+			return of();
+		}
 	}
 
 	/** POST pokemon */
 	addPokemon(pokemon: Pokemon): Observable<Pokemon> {
+		if(this.authService.isAdm) {
+
+			const httpOptions = {
+				headers: new HttpHeaders({'Content-Type': 'application/json'})
+			};
+
+			return this.http.put<Pokemon>(this.pokemonsUrl + '/' + this.idMax + '.json', pokemon, httpOptions).pipe(
+				tap((pokemon: Pokemon) => this.log(`added pokemon with id=${pokemon.id}`)),
+				catchError(this.handleError<Pokemon>('addPokemon'))
+			);
+		}
+		else {
+			return of();
+		}
+	}
+
+	addUserPokemon(): Observable<number> {
 		const httpOptions = {
-			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+			headers: new HttpHeaders({'Content-Type': 'application/json'})
 		};
 
-		return this.http.put<Pokemon>(this.pokemonsUrl + '/' + this.idMax + '.json', pokemon, httpOptions).pipe(
-			tap((pokemon: Pokemon) => this.log(`added pokemon with id=${pokemon.id}`)),
-			catchError(this.handleError<Pokemon>('addPokemon'))
+		let listeUsPoke = this.authService.listPoke;
+		//listeUsPoke.push(Math.floor(Math.random()*this.pokemons.length));
+		// @ts-ignore
+		return this.http.put<number>(this.urlUsers+"/"+this.authService.name+"/listePoke/"+listeUsPoke.length+".json", Math.floor(Math.random()*this.pokemons.length), httpOptions).pipe(
+			tap((pokemon: number) => this.log(`added pokemon with `)),
+			catchError(this.handleError<number[]>('addPokemon'))
 		);
 	}
 
@@ -122,10 +175,15 @@ export class PokemonsService {
 					ids = Object.keys(next);
 					for (let i = 0; i < ids.length; i++) {
 						if(next[ids[i]] != null && next[ids[i]].name.toLowerCase().includes(term.toLowerCase())){
-							pokemonsSearched.push(next[ids[i]]);
+							for (let j = 0; j < this.pokemons.length; j++){
+								if(this.pokemons[j].id == next[ids[i]].id){
+									pokemonsSearched.push(next[ids[i]]);
+								}
+							}
 						}
 					}
 			});
+
 		return of(pokemonsSearched);
 	}
 

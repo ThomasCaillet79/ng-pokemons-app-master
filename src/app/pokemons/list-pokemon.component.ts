@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { Pokemon } from './pokemon';
 import { Router } from '@angular/router';
 import { PokemonsService } from './pokemons.service';
+import {AuthService} from "../auth.service";
 
 @Component({
 	selector: 'list-pokemon',
@@ -16,7 +17,8 @@ export class ListPokemonComponent implements OnInit {
 	constructor(
 		private router: Router,
 		private pokemonsService: PokemonsService,
-		private titleService: Title) { }
+		private titleService: Title,
+		private authService: AuthService) { }
 
 	ngOnInit(): void {
 		this.getPokemons();
@@ -30,6 +32,11 @@ export class ListPokemonComponent implements OnInit {
 	selectPokemon(pokemon: Pokemon): void {
 		let link = ['/pokemon', pokemon.id.toString()];
 		this.router.navigate(link);
+	}
+
+	addPokemon(): void{
+		this.pokemonsService.addUserPokemon();
+		//window.location.reload();
 	}
 
 }
