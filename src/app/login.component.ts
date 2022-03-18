@@ -25,8 +25,16 @@ import { AuthService } from './auth.service';
 	    </form>
       <div class="card-action center">
         <a (click)="login()" class="waves-effect waves-light btn"  *ngIf="!authService.isLoggedIn">Se connecter</a>
-	    <a (click)="createAccount()" class="waves-effect waves-light btn"  *ngIf="!authService.isLoggedIn">Créer un compte</a>
-        <a (click)="logout()" *ngIf="authService.isLoggedIn">Se déconnecter</a>
+	    <a (click)="createAccount(name, password)" class="waves-effect waves-light btn"  *ngIf="!authService.isLoggedIn">Créer un compte</a>
+		  <div [hidden]="valid_name"
+			   class="card-panel red accent-1">
+			  Nom d'utilisateur déjà pris !
+		  </div>
+		  <div [hidden]="!account_created"
+			   class="card-panel green accent-1">
+			  Compte créé !
+		  </div>
+	    <a (click)="logout()" *ngIf="authService.isLoggedIn">Se déconnecter</a>
       </div>
     </div>
     </div>
@@ -37,6 +45,8 @@ export class LoginComponent {
 	message: string = 'Vous êtes déconnecté.';
 	private name: string;
 	private password: string;
+	valid_name: boolean = true;
+	account_created: boolean = false;
 
 	constructor(
 		private authService: AuthService,
@@ -45,6 +55,7 @@ export class LoginComponent {
 
 	ngOnInit() {
 		this.titleService.setTitle('Connexion');
+		this.authService.getUserNamesInDB();
 	}
 
 	// Informe l'utilisateur sur son authentfication.
@@ -77,6 +88,14 @@ export class LoginComponent {
 	}
 
 	// Créer un compte
-	createAccount(){
+	createAccount(name: string, password: string){
+		if(this.authService.user_names_in_db.includes(name)){
+			this.valid_name = false;
+		}else{
+			this.authService.addUserAccount(name, password);
+			this.valid_name = true;
+			this.account_created = true;
+
+		}
 	}
 }

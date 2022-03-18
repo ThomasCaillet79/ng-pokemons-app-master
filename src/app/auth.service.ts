@@ -11,6 +11,7 @@ export class AuthService {
 	isAdm:  any[] | boolean = false;
 	listPoke: number[];
 	redirectUrl: string; // où rediriger l'utilisateur après l'authentification ?
+	user_names_in_db: any[];
 	name : string;
 	password: string;
 	private urlUsers = 'https://pokemon-beb38-default-rtdb.europe-west1.firebasedatabase.app/users';
@@ -18,9 +19,6 @@ export class AuthService {
 
 	// Une méthode de connexion
 	login(name: string, password: string): Observable<boolean> {
-		// Faites votre appel à un service d'authentification...
-		//let isLoggedIn = (name === 'pikachu' && password === 'pikachu');
-
 
 		this.http.get<string>(this.urlUsers+"/"+name+"/password.json").pipe(
 			tap(_ => this.log(`login`)),
@@ -42,6 +40,20 @@ export class AuthService {
 		);
 
 
+	}
+
+	addUserAccount(name: string, password: string){
+		let body = {
+    		admin: false,
+    		listePoke: [3],
+    		password: password
+		}
+
+		let url = this.urlUsers + "/" + name + ".json"
+		this.http.put(url, body).pipe(
+			tap(_ => this.log(`new user=${name}`)),
+			catchError(this.handleError<any>('addUserAccount'))
+		).subscribe();
 	}
 
 	getUser(){
@@ -88,4 +100,16 @@ export class AuthService {
 	private log(log: string) {
 		console.info(log);
 	}
+
+	getUserNamesInDB(){
+		this.http.get<number[]>(this.urlUsers+".json").pipe(
+			tap(_ => this.log(`fetched users names`)),
+			catchError(this.handleError('getUserNamesInDB', []))
+		).subscribe(next => {
+			this.user_names_in_db = Object.keys(next);
+		});
+
+		return this.user_names_in_db;
+	}
+
 }
